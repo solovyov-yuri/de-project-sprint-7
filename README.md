@@ -21,3 +21,18 @@
 Внутри `src` расположены две папки:
 - `/src/dags`;
 - `/src/sql`.
+
+
+![alt text](image.png)
+
+Слой сырых данных — Raw
+/user/master/data
+
+Слой предобработанных данных — ODS
+/user/solovyovyu/data/events
+
+Слой песочницы — Data Sandbox
+/user/solovyovyu/data/analitics
+
+Витрины Data Marts
+/prod/data/table_example
