@@ -1,5 +1,5 @@
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta  # noqa
 
 date = "2022-01-02"
 row_data_path = "/user/master/data/geo/events"

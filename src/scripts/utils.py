@@ -1,20 +1,17 @@
+import subprocess
 from calendar import monthrange
 from datetime import datetime, timedelta
 from logging import Logger
-import os
-import subprocess
-import sys
 
 import numpy as np
 import pandas as pd
+from logger import LoggerConfig
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf
-from pyspark.sql.types import StructType, StructField, StringType, TimestampType, DoubleType
+from pyspark.sql.types import DoubleType, StringType, StructField, StructType, TimestampType
 from pyspark.sql.window import Window
 from timezonefinder import TimezoneFinder
-
-from logger import LoggerConfig
 
 logger = LoggerConfig.get_logger("utils")
 
@@ -115,7 +112,11 @@ def read_events(event_paths: list, spark: SparkSession, logger: Logger) -> DataF
             .where(F.col("lat").isNotNull() & F.col("lon").isNotNull())
             .select(
                 F.col("event.message_id"),
-                F.coalesce(F.col("event.message_from"), F.col("event.reaction_from"), F.col("event.user")).alias("user_id"),
+                F.coalesce(
+                    F.col("event.message_from"),
+                    F.col("event.reaction_from"),
+                    F.col("event.user"),
+                ).alias("user_id"),
                 F.coalesce(F.col("event.message_ts"), F.col("event.datetime")).alias("datetime"),
                 "lat",
                 "lon",
@@ -184,9 +185,17 @@ def add_distance(events_df: DataFrame, geo_df: DataFrame, logger: Logger) -> Dat
     """
     geo_df = F.broadcast(geo_df)
     try:
-        result_df = events_df.crossJoin(geo_df).withColumn("distance", haversine_udf(F.col("lat"), F.col("lon"), F.col("geo_lat"), F.col("geo_lon")))
+        result_df = events_df.crossJoin(geo_df).withColumn(
+            "distance",
+            haversine_udf(
+                F.col("lat"),
+                F.col("lon"),
+                F.col("geo_lat"),
+                F.col("geo_lon"),
+            ),
+        )
 
-        logger.info(f"Distance data added to dataframe.")
+        logger.info("Distance data added to dataframe.")
         return result_df
 
     except Exception as e:
