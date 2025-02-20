@@ -4,7 +4,7 @@ from logger import LoggerConfig
 from pyspark.sql import SparkSession
 from utils import add_closest_city, agg_events_by_geo_n_period, input_paths, read_events, read_geo, get_registrations
 
-logger = LoggerConfig.get_logger("Mart Zones")
+logger = LoggerConfig.get_logger("Mart Geo")
 
 
 def main():
@@ -31,11 +31,13 @@ def main():
         depth = 1
         logger.warning("Varible 'depth' set as 1.")
 
-    logger.info(f"Received parameters: input_path={input_path}, geo_path={geo_path}, output_path={output_path}, date={date}")
+    logger.info(
+        f"Received parameters: input_path={input_path}, geo_path={geo_path}, output_path={output_path}, date={date}"
+    )
 
     # Create Spark session
     try:
-        spark = SparkSession.builder.appName("Mart Zones").getOrCreate()
+        spark = SparkSession.builder.appName("Mart Geo").getOrCreate()
         logger.info("SparkSession successfully created.")
     except Exception as e:
         logger.error(f"Error creating SparkSession: {e}", exc_info=True)
@@ -91,7 +93,8 @@ def main():
         .select(cols)
     )
 
-    mart_geo.show()
+    mart_geo.write.mode("overwrite").parquet(f"{output_path}/mart_geo")
+    logger.info(f"Mart Geo saved in {output_path}")
 
 
 if __name__ == "__main__":

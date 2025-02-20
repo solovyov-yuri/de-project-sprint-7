@@ -18,8 +18,8 @@ dag = DAG(
     dag_id="build_marts_dag",
     default_args=default_args,
     schedule_interval="@daily",
-    start_date=datetime(2022, 1, 2),
-    end_date=datetime(2022, 6, 10),
+    start_date=datetime(2022, 1, 10),
+    # end_date=datetime(2022, 1, 10),
     catchup=False,
 )
 
@@ -44,15 +44,17 @@ t1 = SparkSubmitOperator(
 t2 = SparkSubmitOperator(
     task_id="build_mart_users",
     dag=dag,
-    application="/lessons/mart_users.py",
+    application="/lessons/mart_user.py",
     conn_id="spark_yarn",
     application_args=[
         "/user/solovyovyu/data/geo/events",
         "/user/solovyovyu/geo.csv",
         "/user/solovyovyu/analytics",
         execution_date,
-        30,
     ],
+    conf={"spark.driver.maxResultSize": "20g"},
+    executor_cores=2,
+    executor_memory="2g",
 )
 
 # Task 2
@@ -66,8 +68,10 @@ t3 = SparkSubmitOperator(
         "/user/solovyovyu/geo.csv",
         "/user/solovyovyu/analytics",
         execution_date,
-        30,
     ],
+    conf={"spark.driver.maxResultSize": "20g"},
+    executor_cores=2,
+    executor_memory="2g",
 )
 
 t4 = SparkSubmitOperator(
@@ -80,8 +84,10 @@ t4 = SparkSubmitOperator(
         "/user/solovyovyu/geo.csv",
         "/user/solovyovyu/analytics",
         execution_date,
-        30,
     ],
+    conf={"spark.driver.maxResultSize": "20g"},
+    executor_cores=2,
+    executor_memory="2g",
 )
 
 t1 >> [t2, t3, t4]

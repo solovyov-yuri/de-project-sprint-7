@@ -121,6 +121,8 @@ def read_events(event_paths: list, spark: SparkSession, logger: Logger) -> DataF
                 "lat",
                 "lon",
                 "event.subscription_channel",
+                F.col("event.message_to").alias("message_to"),
+                F.col("event.message_ts").alias("message_ts"),
             )
         )
         logger.info(f"Events are read from {existing_paths}.")

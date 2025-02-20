@@ -9,9 +9,9 @@ export PYSPARK_DRIVER_PYTHON=/usr/bin/python3
 /usr/lib/spark/bin/spark-submit --master local partition_overwrite.py 2022-05-04 /user/master/data/geo/events /user/solovyovyu/data/geo/events
 
 # Mart User
-/usr/lib/spark/bin/spark-submit --master yarn --deploy-mode cluster mart_user.py /user/solovyovyu/geo.csv /user/master/data/geo/events /user/solovyovyu/analytics
-/usr/lib/spark/bin/spark-submit --master local mart_user.py /user/solovyovyu/geo.csv /user/master/data/geo/events /user/solovyovyu/analytics
-
+/usr/lib/spark/bin/spark-submit --master yarn --deploy-mode cluster /lessons/mart_user.py /user/solovyovyu/geo.csv /user/master/data/geo/events /user/solovyovyu/analytics 2022-02-01 30
+/usr/lib/spark/bin/spark-submit --master local /lessons/mart_user.py /user/solovyovyu/geo.csv /user/master/data/geo/events /user/solovyovyu/analytics 2022-02-01 30
 
 # Mart Geo
-/usr/lib/spark/bin/spark-submit --master local mart_geo.py /user/solovyovyu/data/geo/events /user/solovyovyu/geo.csv  /user/solovyovyu/analytics 2022-05-04 30
+/usr/lib/spark/bin/spark-submit --master local mart_geo.py /user/solovyovyu/data/geo/events /user/solovyovyu/geo.csv  /user/solovyovyu/analytics 2022-02-01 30
+/usr/lib/spark/bin/spark-submit --master local mart_geo.py /user/solovyovyu/geo.csv /user/master/data/geo/events /user/solovyovyu/analytics 2022-02-01 30
