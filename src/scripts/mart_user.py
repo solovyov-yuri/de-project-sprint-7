@@ -1,4 +1,3 @@
-from datetime import datetime
 import os
 import sys
 
@@ -17,10 +16,13 @@ logger = LoggerConfig.get_logger("Mart Zones")
 
 
 def main():
+    cmd = "pip install timezonefinder"
+
+    os.system(cmd)
 
     # Check viriables
     if len(sys.argv) < 4:
-        logger.error("Not enough arguments! Usage: mart_zones.py <input_path> <geo_path> <output_path>")
+        logger.error("Not enough arguments! Usage: mart_user.py <input_path> <geo_path> <output_path>")
         sys.exit(1)
 
     input_path = sys.argv[1]
@@ -28,8 +30,6 @@ def main():
     output_path = sys.argv[3]
     try:
         date = sys.argv[4]
-        dt = datetime.strptime(date, "%Y-%m-%d")
-        month = f"{dt.year}-{dt.month:02}"
     except IndexError:
         date = ""
         logger.warning("Varible 'date' set as None.")
@@ -108,6 +108,10 @@ def main():
 
     # Save data
     mart_user.write.mode("overwrite").parquet(f"{output_path}/mart_user")
+    logger.info(f"Mart User saved in {output_path}")
+
+    spark.stop()
+    logger.info("SparkSession stopped.")
 
 
 if __name__ == "__main__":

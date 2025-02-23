@@ -13,7 +13,7 @@ def main():
     """
     # Check viriables
     if len(sys.argv) < 4:
-        logger.error("Not enough arguments! Usage: mart_zones.py <input_path> <geo_path> <output_path>")
+        logger.error("Not enough arguments! Usage: mart_geo.py <input_path> <geo_path> <output_path>")
         sys.exit(1)
 
     input_path = sys.argv[1]
@@ -93,8 +93,11 @@ def main():
         .select(cols)
     )
 
-    mart_geo.write.mode("overwrite").parquet(f"{output_path}/mart_geo")
+    mart_geo.write.mode("overwrite").partitionBy(["month", "week"]).parquet(f"{output_path}/mart_geo")
     logger.info(f"Mart Geo saved in {output_path}")
+
+    spark.stop()
+    logger.info("SparkSession stopped.")
 
 
 if __name__ == "__main__":

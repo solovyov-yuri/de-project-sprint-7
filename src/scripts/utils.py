@@ -61,15 +61,6 @@ def path_exists(path: str) -> bool:
         return False
 
 
-# @pandas_udf(StringType())
-# def get_timezone(lat: pd.Series, lng: pd.Series) -> pd.Series:
-#     tf = TimezoneFinder()
-#     return lat.combine(
-#         lng,
-#         lambda lat, lng: tf.timezone_at(lat=lat, lng=lng) if pd.notnull(lat) and pd.notnull(lng) else None
-#     )
-
-
 def get_timezone(lat, lng):
     if lat is None or lng is None:
         print("lat or lng is not defined")
@@ -97,6 +88,7 @@ def read_events(event_paths: list, spark: SparkSession, logger: Logger) -> DataF
             [
                 StructField("message_id", StringType(), True),
                 StructField("user_id", StringType(), True),
+                StructField("message_to", StringType(), True),
                 StructField("datetime", TimestampType(), True),
                 StructField("lat", DoubleType(), True),
                 StructField("lon", DoubleType(), True),
@@ -122,7 +114,6 @@ def read_events(event_paths: list, spark: SparkSession, logger: Logger) -> DataF
                 "lon",
                 "event.subscription_channel",
                 F.col("event.message_to").alias("message_to"),
-                F.col("event.message_ts").alias("message_ts"),
             )
         )
         logger.info(f"Events are read from {existing_paths}.")
@@ -227,9 +218,8 @@ def add_closest_city(df: DataFrame, geo_df: DataFrame, logger: Logger) -> DataFr
         window = Window.partitionBy("message_id", "user_id").orderBy("distance")
 
         result_df = (
-            df_with_distance.withColumn("rank", F.row_number().over(window))
-            .filter(F.col("rank") == 1)
-            .select("message_id", "user_id", "datetime", "city", "timezone")
+            df_with_distance.withColumn("rank", F.row_number().over(window)).filter(F.col("rank") == 1)
+            # .select("message_id", "user_id", "message_to", "datetime", "city", "timezone")
         )
         logger.info("City closest to event added to dataframe.")
 
@@ -259,3 +249,23 @@ def agg_events_by_geo_n_period(df: DataFrame, atr_prefix: str, logger: Logger) -
     )
 
     return result_df
+
+
+def add_local_time(df: DataFrame, logger: Logger) -> DataFrame:
+    """
+    Add local time to dataframe.
+    """
+    try:
+        window = Window.partitionBy("user_id").orderBy("datetime")
+
+        result_df = (
+            df.withColumn("rank", F.rank().over(window))
+            .filter(F.col("rank") == 1)
+            .withColumn("local_time", F.from_utc_timestamp(F.col("datetime"), F.col("timezone")))
+        )
+        logger.info("Local time added to dataframe.")
+        return result_df
+
+    except Exception as e:
+        logger.error(f"Error while adding local time: {e}")
+        raise e
